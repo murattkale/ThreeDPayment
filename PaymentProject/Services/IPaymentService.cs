@@ -8,7 +8,7 @@ namespace PaymentProject.Services
     {
         Task<PaymentTransaction> GetById(int id,
             bool includeBank = false);
-        Task<PaymentTransaction> GetByOrderNumber(Guid orderNumber,
+        Task<PaymentTransaction> GetByOrderNumber(string orderNumber,
             bool includeBank = false);
         Task Insert(PaymentTransaction paymentTransaction);
         Task Update(PaymentTransaction paymentTransaction);

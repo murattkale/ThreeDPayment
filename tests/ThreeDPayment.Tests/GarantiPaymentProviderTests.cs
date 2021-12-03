@@ -36,7 +36,7 @@ namespace ThreeDPayment.Tests
             {
                 CardHolderName = "Sefa Can",
                 CardNumber = "4508-0345-0803-4509",
-                ExpireMonth = 12,
+                ExpireMonth = "12",
                 ExpireYear = 21,
                 CvvCode = "000",
                 CardType = "1",
@@ -46,7 +46,7 @@ namespace ThreeDPayment.Tests
                 CurrencyIsoCode = "949",
                 LanguageIsoCode = "tr",
                 OrderNumber = Guid.NewGuid().ToString(),
-                BankName = BankNames.IsBankasi,
+                BankName = BankNames.Garanti,
                 BankParameters = provider.TestParameters,
                 CallbackUrl = new Uri("https://google.com")
             });

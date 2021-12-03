@@ -176,7 +176,7 @@
         $(document).on("submit", "form", function (e) {
             e.preventDefault();
 
-            debugger;
+   
             var postData = new URLSearchParams(new FormData(document.getElementById("payment-form")));
 
             //submit payment form params
@@ -189,6 +189,7 @@
             })
                 .then(function (response) { return response.json() })
                 .then(function (response) {
+                    debugger;
                     if (response && response.gatewayUrl) {
                         $("#payment-modal iframe").attr("src", response.gatewayUrl);
                         $("#payment-modal").modal("show");
@@ -202,6 +203,7 @@
         });
 
         $(window).on("message", function (e) {
+            debugger;
             var data = e.originalEvent.data;
             if (data) {
                 if (data.success && data.orderNumber) {

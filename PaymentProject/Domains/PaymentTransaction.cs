@@ -4,7 +4,7 @@ namespace PaymentProject.Domains
 {
     public class PaymentTransaction : BaseEntity
     {
-        public Guid OrderNumber { get; set; }
+        public string OrderNumber { get; set; }
         public string TransactionNumber { get; set; }
         public string ReferenceNumber { get; set; }
         public string UserIpAddress { get; set; }

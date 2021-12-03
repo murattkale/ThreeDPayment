@@ -29,13 +29,14 @@ namespace ThreeDPayment.Results
             string gatewayUrl,
             string message = null)
         {
-            return new PaymentGatewayResult
+            var row = new PaymentGatewayResult
             {
                 Success = true,
                 Parameters = parameters,
                 GatewayUrl = new Uri(gatewayUrl),
                 Message = message
             };
+            return row;
         }
 
         public static PaymentGatewayResult Failed(string errorMessage, string errorCode = null)

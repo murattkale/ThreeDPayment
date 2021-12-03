@@ -27,6 +27,8 @@ namespace ThreeDPayment.Providers
         {
             try
             {
+                //request.OrderNumber = request.OrderNumber.Substring(0, 14).Replace('-', '_');
+
                 string terminalUserId = request.BankParameters["terminalUserId"];
                 string terminalId = request.BankParameters["terminalId"];
                 string terminalMerchantId = request.BankParameters["terminalMerchantId"];
@@ -56,7 +58,7 @@ namespace ThreeDPayment.Providers
                 parameters.Add("txntype", type);//direk satış
                 parameters.Add("txncurrencycode", request.CurrencyIsoCode);//TL ISO code | EURO 978 | Dolar 840
                 parameters.Add("lang", request.LanguageIsoCode);
-                parameters.Add("motoind", "N");
+                //parameters.Add("motoind", "N");
                 parameters.Add("customeripaddress", request.CustomerIpAddress);
                 parameters.Add("orderaddressname1", request.CardHolderName);
                 parameters.Add("orderid", request.OrderNumber);//sipariş numarası
@@ -75,25 +77,37 @@ namespace ThreeDPayment.Providers
 
                 parameters.Add("txninstallmentcount", installment);//taksit sayısı | boş tek çekim olur
 
-                var hashBuilder = new StringBuilder();
-                hashBuilder.Append(terminalId);
-                hashBuilder.Append(request.OrderNumber);
-                hashBuilder.Append(amount);
-                hashBuilder.Append(request.CallbackUrl);
-                hashBuilder.Append(request.CallbackUrl);
-                hashBuilder.Append(type);
-                hashBuilder.Append(installment);
-                hashBuilder.Append(storeKey);
 
                 //garanti tarafından terminal numarasını 9 haneye tamamlamak için başına sıfır eklenmesi isteniyor.
                 string _terminalid = string.Format("{0:000000000}", int.Parse(terminalId));
 
-                //provizyon şifresi ve 9 haneli terminal numarasının birleşimi ile bir hash oluşturuluyor
-                string securityData = GetSHA1($"{terminalProvPassword}{_terminalid}");
-                hashBuilder.Append(securityData);
 
-                var hashData = GetSHA1(hashBuilder.ToString());
+
+                //var hashBuilder = new StringBuilder();
+                //hashBuilder.Append(terminalId);
+                //hashBuilder.Append(request.OrderNumber);
+                //hashBuilder.Append(amount);
+                //hashBuilder.Append(request.CallbackUrl);
+                //hashBuilder.Append(request.CallbackUrl);
+                //hashBuilder.Append(type);
+                //hashBuilder.Append(installment);
+                //hashBuilder.Append(storeKey);
+
+                ////garanti tarafından terminal numarasını 9 haneye tamamlamak için başına sıfır eklenmesi isteniyor.
+                //string _terminalid = string.Format("{0:000000000}", int.Parse(terminalId));
+
+                //////provizyon şifresi ve 9 haneli terminal numarasının birleşimi ile bir hash oluşturuluyor
+                //string securityData = GetSHA1($"{terminalProvPassword}{_terminalid}");
+                //hashBuilder.Append(securityData);
+
+                //var hashData = GetSHA1(hashBuilder.ToString());
+
+                string SecurityData = GetSHA1(terminalProvPassword + _terminalid).ToUpper();
+                string hashData = GetSHA1(terminalId + request.OrderNumber + amount + request.CallbackUrl + request.CallbackUrl + type + installment + storeKey + SecurityData).ToUpper();
+
                 parameters.Add("secure3dhash", hashData);
+
+
 
                 return Task.FromResult(PaymentGatewayResult.Successed(parameters, request.BankParameters["gatewayUrl"]));
             }
@@ -390,7 +404,7 @@ namespace ThreeDPayment.Providers
             return PaymentDetailResult.FailedResult(bankErrorMessage, responseCode, errorMessage);
         }
 
-        private string GetSHA1(string text)
+        private string OldGetSHA1(string text)
         {
             var cryptoServiceProvider = new SHA1CryptoServiceProvider();
             var inputbytes = cryptoServiceProvider.ComputeHash(Encoding.UTF8.GetBytes(text));
@@ -404,6 +418,27 @@ namespace ThreeDPayment.Providers
             return builder.ToString().ToUpper();
         }
 
+        public string GetSHA1(string SHA1Data)
+        {
+            SHA1 sha = new SHA1CryptoServiceProvider();
+            string HashedPassword = SHA1Data;
+            byte[] hashbytes = Encoding.GetEncoding("ISO-8859-9").GetBytes(HashedPassword);
+            byte[] inputbytes = sha.ComputeHash(hashbytes);
+            return GetHexaDecimal(inputbytes);
+        }
+
+
+        public string GetHexaDecimal(byte[] bytes)
+        {
+            StringBuilder s = new StringBuilder();
+            int length = bytes.Length;
+            for (int n = 0; n <= length - 1; n++)
+            {
+                s.Append(String.Format("{0,2:x}", bytes[n]).Replace(" ", "0"));
+            }
+            return s.ToString();
+        }
+
         public Dictionary<string, string> TestParameters => new Dictionary<string, string>
         {
             { "terminalUserId", "1" },
@@ -413,8 +448,8 @@ namespace ThreeDPayment.Providers
             { "terminalProvPassword", "1" },
             { "storeKey", "1" },
             { "mode", "TEST" },
-            { "gatewayUrl", "https://sanalposprov.garanti.com.tr/VPServlet" },
-            { "verifyUrl", "https://sanalposprov.garanti.com.tr/VPServlet" }
+            { "gatewayUrl", "https://sanalposprovtest.garanti.com.tr/servlet/gt3dengine" },
+            { "verifyUrl", "https://sanalposprovtest.garanti.com.tr/servlet/gt3dengine" }
         };
 
         private static readonly string[] mdStatusCodes = new[] { "1", "2", "3", "4" };

@@ -4,7 +4,7 @@ namespace PaymentProject.Models
 {
     public class CompletedViewModel
     {
-        public Guid OrderNumber { get; set; }
+        public string OrderNumber { get; set; }
         public string TransactionNumber { get; set; }
         public string ReferenceNumber { get; set; }
         public int BankId { get; set; }

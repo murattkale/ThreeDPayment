@@ -127,13 +127,13 @@ namespace PaymentProject
                 //confirm
                 endpoints.MapControllerRoute(
                     name: "Confirm",
-                    pattern: "payment/confirm/{paymentId:Guid?}",
+                    pattern: "payment/confirm/{paymentId?}",
                     defaults: new { action = "Confirm", controller = "Payment" });
 
                 //callback
                 endpoints.MapControllerRoute(
                     name: "Callback",
-                    pattern: "payment/callback/{paymentId:Guid?}",
+                    pattern: "payment/callback/{paymentId?}",
                     defaults: new { action = "Callback", controller = "Payment" });
 
                 endpoints.MapDefaultControllerRoute();

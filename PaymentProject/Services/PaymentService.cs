@@ -29,10 +29,10 @@ namespace PaymentProject.Services
             return query.FirstOrDefaultAsync(x => x.Id.Equals(id));
         }
 
-        public Task<PaymentTransaction> GetByOrderNumber(Guid orderNumber,
+        public Task<PaymentTransaction> GetByOrderNumber(string orderNumber,
             bool includeBank = false)
         {
-            if (orderNumber == Guid.Empty)
+            if (orderNumber == string.Empty)
                 return Task.FromResult<PaymentTransaction>(null);
 
             var query = _dataContext.PaymentTransactions.AsQueryable();

@@ -73,11 +73,11 @@ namespace ThreeDPayment
 
             string formId = "PaymentForm";
             StringBuilder formBuilder = new StringBuilder();
-            formBuilder.Append($"<form id=\"{formId}\" name=\"{formId}\" action=\"{actionUrl}\" role=\"form\" method=\"POST\">");
+            formBuilder.Append($"<form role=\"form\" method=\"POST\" id=\"{formId}\" name=\"{formId}\" action=\"{actionUrl}\" >");
 
             foreach (KeyValuePair<string, object> parameter in parameters)
             {
-                formBuilder.Append($"<input type=\"hidden\" name=\"{parameter.Key}\" value=\"{parameter.Value}\">");
+                formBuilder.Append($"<input type=\"hidden\" id=\"{parameter.Key}\" name=\"{parameter.Key}\" value=\"{parameter.Value}\" />");
             }
 
             formBuilder.Append("</form>");

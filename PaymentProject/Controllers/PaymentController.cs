@@ -47,6 +47,27 @@ namespace ThreeDPayment.Controllers
         [HttpPost]
         public async Task<IActionResult> Index([FromForm] PaymentViewModel model)
         {
+
+            string dateString = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string TmpOrderID = dateString ;
+            if (TmpOrderID.Length < 20)
+            {
+                int eklenecek = 20 - TmpOrderID.Length;
+
+                for (int i = 0; i < eklenecek; i++)
+                {
+                    TmpOrderID = TmpOrderID + i.ToString();
+                }
+
+            }
+            if (TmpOrderID.Length > 20)
+            {
+                TmpOrderID = TmpOrderID.Substring(0, 20);
+            }
+
+            ////TmpOrderID = Guid.NewGuid().ToString().Trim();
+            //TmpOrderID = "1";
+
             try
             {
                 //gateway request
@@ -55,13 +76,14 @@ namespace ThreeDPayment.Controllers
                     CardHolderName = model.CardHolderName,
                     //clear credit card unnecessary characters
                     CardNumber = model.CardNumber?.Replace(" ", string.Empty).Replace(" ", string.Empty),
-                    ExpireMonth = model.ExpireMonth,
+                    ExpireMonth = Convert.ToInt32(model.ExpireMonth) < 10 ? ("0" + model.ExpireMonth.ToString()) : model.ExpireMonth.ToString(),
                     ExpireYear = model.ExpireYear,
                     CvvCode = model.CvvCode,
                     CardType = model.CardType,
                     Installment = model.Installment,
                     TotalAmount =Convert.ToDecimal( model.TotalAmount),
-                    OrderNumber = Guid.NewGuid().ToString(),
+                    OrderNumber = TmpOrderID,
+                    //OrderNumber = "123456",
                     CurrencyIsoCode = "949",
                     LanguageIsoCode = "tr",
                     CustomerIpAddress = HttpContext.Connection.RemoteIpAddress.ToString()
@@ -78,7 +100,7 @@ namespace ThreeDPayment.Controllers
                 //create payment transaction
                 PaymentTransaction payment = new PaymentTransaction
                 {
-                    OrderNumber = Guid.Parse(gatewayRequest.OrderNumber),
+                    OrderNumber = gatewayRequest.OrderNumber,
                     UserIpAddress = gatewayRequest.CustomerIpAddress,
                     UserAgent = HttpContext.Request.Headers[HeaderNames.UserAgent],
                     BankId = model.BankId.Value,
@@ -98,6 +120,7 @@ namespace ThreeDPayment.Controllers
                 var responseModel = new
                 {
                     GatewayUrl = new Uri($"{Request.GetHostUrl(false)}{Url.RouteUrl("Confirm", new { paymentId = payment.OrderNumber })}"),
+                    //GatewayUrl = "/payment/Confirm/" + payment.OrderNumber,
                     Message = "Redirecting to gateway..."
                 };
 
@@ -111,9 +134,9 @@ namespace ThreeDPayment.Controllers
             }
         }
 
-        public async Task<IActionResult> Confirm(Guid paymentId)
+        public async Task<IActionResult> Confirm(string paymentId)
         {
-            if (paymentId == Guid.Empty)
+            if (paymentId == string.Empty)
             {
                 VerifyGatewayResult failModel = VerifyGatewayResult.Failed("Ödeme bilgisi geçersiz.");
                 return View("Fail", failModel);
@@ -125,7 +148,7 @@ namespace ThreeDPayment.Controllers
             {
                 VerifyGatewayResult failModel = VerifyGatewayResult.Failed("Ödeme bilgisi geçersiz.");
                 return View("Fail", failModel);
-            }
+            } 
 
             PaymentGatewayRequest bankRequest = JsonConvert.DeserializeObject<PaymentGatewayRequest>(payment.BankRequest);
             if (bankRequest == null)
@@ -244,9 +267,9 @@ namespace ThreeDPayment.Controllers
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> Callback(Guid paymentId, IFormCollection form)
+        public async Task<IActionResult> Callback(string paymentId, IFormCollection form)
         {
-            if (paymentId == Guid.Empty)
+            if (paymentId == string.Empty)
             {
                 VerifyGatewayResult failModel = VerifyGatewayResult.Failed("Ödeme bilgisi geçersiz.");
                 return View("Fail", failModel);
@@ -317,7 +340,7 @@ namespace ThreeDPayment.Controllers
             return View("Fail", verifyResult);
         }
 
-        public async Task<IActionResult> Completed([FromRoute(Name = "id")] Guid orderNumber)
+        public async Task<IActionResult> Completed([FromRoute(Name = "id")] string orderNumber)
         {
             //get order by order number
             PaymentTransaction payment = await _paymentService.GetByOrderNumber(orderNumber, includeBank: true);
